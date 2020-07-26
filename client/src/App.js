@@ -5,6 +5,7 @@ import TransactionService from "./Services/TransactionService";
 import Summary from "./Summary";
 import AddNewAndFilter from "./AddNewAndFilter";
 import Transactions from "./Transactions";
+import TransactionForm from "./TransactionForm";
 
 export default function App() {
   const [period, setPeriod] = useState("2019-07");
@@ -17,22 +18,26 @@ export default function App() {
   });
   const [transactions, setTransactions] = useState([]);
   const [allTransactions, setAllTransactions] = useState([]);
+  const [selectedTransaction, setSelectedTransaction] = useState({});
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [reload, setReload] = useState(false);
+  const [isNew, setIsNew] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
       const data = await TransactionService.getByPeriod(period);
       const newTransactions = data.data;
       setAllTransactions(newTransactions);
+      setReload(false);
     }
     fetchData();
-  }, [period]);
+  }, [period, reload]);
 
   useEffect(() => {
     filterTransactions();
   }, [allTransactions, filter]);
 
   const filterTransactions = () => {
-    console.log("transactions", allTransactions, filter);
     const newTransactions =
       filter.length > 0
         ? allTransactions.filter(
@@ -44,7 +49,6 @@ export default function App() {
   };
 
   const calcSummary = (transactions) => {
-    console.log("calcSummary", transactions);
     const receitas = transactions
       .filter((t) => t.type === "+")
       .map((t) => t.value)
@@ -59,7 +63,7 @@ export default function App() {
       despesas,
       saldo: receitas - despesas,
     };
-    setTransactions(transactions);
+    setTransactions(transactions.sort((a, b) => a.day - b.day));
     setSummary(newSummary);
   };
 
@@ -68,11 +72,48 @@ export default function App() {
   };
 
   const handleAddNew = (event) => {
-    console.log("addnewFilter");
+    setIsNew(true);
+    const now = new Date();
+    const yearMonthDay = `${now.getFullYear()}-${(now.getMonth() + 1)
+      .toString()
+      .padStart(2, "0")}-${now.getDate().toString().padStart(2, "0")}`;
+    setSelectedTransaction({
+      type: "+",
+      description: "",
+      value: 0,
+      category: "",
+      yearMonthDay,
+    });
+    setIsModalOpen(true);
   };
 
   const handleFilterChange = (newFilter) => {
     setFilter(newFilter);
+  };
+
+  const handleSelectTransaction = (transaction) => {
+    setSelectedTransaction(transaction);
+    setIsModalOpen(true);
+  };
+
+  const handleFormSave = async (formData) => {
+    setIsModalOpen(false);
+    if (isNew) {
+      await TransactionService.addTransaction(formData);
+    } else {
+      await TransactionService.updateTransaction(formData);
+    }
+    setIsNew(false);
+    setReload(true);
+  };
+
+  const handleFormClose = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleDeleteTransaction = async (id) => {
+    await TransactionService.deleteTransaction(id);
+    setReload(true);
   };
 
   return (
@@ -80,12 +121,25 @@ export default function App() {
       <Header />
       <PeriodSelector value={period} onChange={handlePeriodChange} />
       <Summary value={summary} />
-      <AddNewAndFilter
-        value={filter}
-        addNew={handleAddNew}
-        filterChange={handleFilterChange}
-      />
-      <Transactions transactions={transactions} />
+      <div className="container mt-2">
+        <AddNewAndFilter
+          value={filter}
+          addNew={handleAddNew}
+          filterChange={handleFilterChange}
+        />
+        <Transactions
+          transactions={transactions}
+          selectTransaction={handleSelectTransaction}
+          deleteTransaction={handleDeleteTransaction}
+        />
+      </div>
+      {isModalOpen && (
+        <TransactionForm
+          onSave={handleFormSave}
+          onClose={handleFormClose}
+          selectedTransaction={selectedTransaction}
+        />
+      )}
     </div>
   );
 }

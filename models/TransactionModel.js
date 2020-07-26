@@ -26,11 +26,11 @@ let schema = mongoose.Schema({
   type: { type: String, required: true },
 });
 
-schema.method("toJSON", function () {
-  const { __v, _id, ...object } = this.toObject();
-  object.id = _id;
-  return object;
-});
+// schema.method("toJSON", function () {
+//   const { __v, _id, ...object } = this.toObject();
+//   object.id = _id;
+//   return object;
+// });
 
 const TransactionModel = mongoose.model("transaction", schema);
 

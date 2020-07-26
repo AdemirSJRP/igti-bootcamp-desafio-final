@@ -20,7 +20,6 @@ const getByDescription = async (req, res) => {
     const movs = await TransactionModel.find({
       description: { $regex: new RegExp(searchExpression), $options: "i" },
     });
-    console.log("movs", movs);
     if (!movs) {
       res.status(404).send({
         error: `Nenhum movimento encontrado para a descrição ${searchExpression}`,
@@ -106,7 +105,7 @@ const create = async (req, res) => {
       error: error.message || "Erro em POST: /transaction",
       error,
     });
-    console.log("erro ao efetuar Post em /transaction", error);
+    console.log("Erro ao efetuar Post em /transaction", error);
   }
 };
 
