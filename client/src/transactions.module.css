@@ -1,0 +1,40 @@
+.cardItem {
+  margin: 10px 10px 10px 0;
+  border: 0;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.flexColumn {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-end;
+  margin-left: 10px;
+}
+
+.valuePositive {
+  color: green;
+  font-weight: bold;
+}
+
+.valueNegative {
+  color: red;
+  font-weight: bold;
+}
+
+.percentPositive {
+  color: rgb(9, 132, 255);
+}
+
+.percentNegative {
+  color: rgb(255, 136, 0);
+}
